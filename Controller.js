@@ -17,8 +17,8 @@ app.get('/', function(req,res){
      res.send('Olá Seja Bem Vindo ao desafio NodeJs!');
  });
 
-//INSERIR NOVO CLIENTE
-app.post('/inserir_cliente', async(req, res)=>{
+//INSERIR NOVO CLIENTE - testado no Postman
+app.post('/cliente', async(req, res)=>{
     await cliente.create(
         req.body
     ).then(cli =>{
@@ -35,8 +35,8 @@ app.post('/inserir_cliente', async(req, res)=>{
     });
 });
 
-//LISTAR TODOS OS CLIENTES 
-app.get('/clientes/listar', async(req, res)=>{
+//LISTAR TODOS OS CLIENTES - Ok testado no Postman
+app.get('/clientes', async(req, res)=>{
     await cliente.findAll()
     .then(cli =>{
         return res.json({
@@ -52,8 +52,8 @@ app.get('/clientes/listar', async(req, res)=>{
     });
 });
 
-//ATUALIZAR CLIENTES 
-app.put('/clientes/:id/atualizar', async (req, res) => {
+//ATUALIZAR CLIENTES - OK testado Postman
+app.put('/clientes/:id', async (req, res) => {
     const cli = {
         nome: req.body.nome,
         cidade: req.body.cidade,
@@ -62,7 +62,7 @@ app.put('/clientes/:id/atualizar', async (req, res) => {
         id: req.params.id
     };
 
-    if (!await cliente.findByPk(req.body.id)){
+    if (!await cliente.findByPk(req.params.id)){
         return res.status(400).json({
             error: true,
             message: 'Cliente não existe.'
@@ -70,8 +70,9 @@ app.put('/clientes/:id/atualizar', async (req, res) => {
     };
 
     await cliente.update(cli,{
-        where: Sequelize.and({id: req.body.id},
-            {id: req.params.id})
+        where: Sequelize.and({id: req.params.id}
+            // {id: req.body.id},
+            )
     }).then(umcliente=>{
         return res.json({
             error: false,
@@ -86,10 +87,10 @@ app.put('/clientes/:id/atualizar', async (req, res) => {
     });
 });
 
-//EXCLUIR CLIENTE 
-app.get('/excluir_cliente/:id', async(req, res)=>{
+//EXCLUIR CLIENTE - Ok testado Postman
+app.delete('/cliente/:id', async(req, res)=>{
     await cliente.destroy({
-        where: {id: req.params.id}
+        where : {id: req.params.id}
     }).then(function(){
         return res.json({
             error: false,
@@ -98,20 +99,21 @@ app.get('/excluir_cliente/:id', async(req, res)=>{
     }).catch(erro=>{
         return res.status(400).json({
             error: true,
-            message: "Erro: impossível excluir cliente."
+            message: "Erro: impossível excluir cliente, problema de execucao."
         });
     });
 });
 
-//INSERIR NOVO CARTAO 
-app.post('/cliente/:id/inserir_cartao', async(req, res)=>{
+
+//INSERIR NOVO CARTAO - Testado no Postman
+app.post('/cliente/:id/cartao', async(req, res)=>{
     const cart = {
         ClienteId: req.params.id,
         dataCartao: req.body.dataCartao,
         validade: req.body.validade
     };
 
-    if(!await cliente.findByPk(req.params.id)){
+    if(! await cliente.findByPk(req.params.id)){
         return res.status(400).json({
             error: true,
             message: 'Cliente não existe.'
@@ -133,8 +135,8 @@ app.post('/cliente/:id/inserir_cartao', async(req, res)=>{
     });
 });
 
-//LISTAR TODOS OS CARTOES DE TODDOS OS CLIENTES 
-app.get('/cartao/listar_todos', async(req, res)=>{
+//LISTAR TODOS OS CARTOES DE TODDOS OS CLIENTES - Ok Testado Postman
+app.get('/cliente-cartaos', async(req, res)=>{
     await cartao.findAll({include: [{all: true}]})
     .then(cart =>{
         return res.json({
@@ -150,8 +152,8 @@ app.get('/cartao/listar_todos', async(req, res)=>{
     });
 });
 
-//LISTAR TODOS OS CARTOES DE UM CLIENTE ESPECÍFICO 
-app.get('/cartao/:id/listar_todos', async(req, res)=>{
+//LISTAR TODOS OS CARTOES DE UM CLIENTE ESPECÍFICO - Ok testado Postman
+app.get('/cliente/:id/cartoes', async(req, res)=>{
     await cartao.findAll({
         where: {ClienteId: req.params.id}
     })
@@ -169,8 +171,8 @@ app.get('/cartao/:id/listar_todos', async(req, res)=>{
     });
 });
 
-//LISTAR UM CARTAO ESPECÍFICO 
-app.get('./cartao/:id', async(req, res)=>{
+//LISTAR UM CARTAO ESPECÍFICO - OK testado Postman
+app.get('/cartao/:id', async(req, res)=>{
     await cartao.findByPk(req.params.id)
     .then(cart =>{
         return res.json({
@@ -186,8 +188,8 @@ app.get('./cartao/:id', async(req, res)=>{
     });
 });
 
-//ATUALIZAR OS DADOS DO CARTAO
-app.put('/cartao/:id/atualizar', async (req, res) => {
+//ATUALIZAR OS DADOS DO CARTAO - OK testado Postman
+app.put('/cartao/:id', async (req, res) => {
     const cart = {
         id: req.params.id,
         ClienteId: req.body.ClienteId,
@@ -195,16 +197,16 @@ app.put('/cartao/:id/atualizar', async (req, res) => {
         validade: req.body.validade
     };
 
-    if (!await cartao.findByPk(req.body.id)){
+    if(! await cliente.findByPk(req.body.ClienteId)){
         return res.status(400).json({
             error: true,
-            message: 'cartão não existe.'
+            message: 'Cliente não existe.'
         });
     };
 
     await cartao.update(cart,{
-        where: Sequelize.and({ClienteId: req.body.ClienteId},
-            {id: req.params.id})
+        where: Sequelize.and({ClienteId : req.body.ClienteId})
+        // ,{id: req.params.id})
     }).then(cartaos=>{
         return res.json({
             error: false,
@@ -219,8 +221,8 @@ app.put('/cartao/:id/atualizar', async (req, res) => {
     });
 });
 
-//EXCLUIR CARTAO
-app.get('/cartao/:id/excluir', async(req, res)=>{
+//EXCLUIR CARTAO - OK testado Postman
+app.delete('/cartao/:id', async(req, res)=>{
     await cartao.destroy({
         where: {id: req.params.id}
     }).then(function(){
@@ -236,24 +238,31 @@ app.get('/cartao/:id/excluir', async(req, res)=>{
     });
 });
 
-//INSERIR NOVA COMPRA
-app.post('/compra/:id/inserir_compra', async(req, res)=>{
-    const compra = {
-        CartaoId: req.params.id,
+//**************************INSERIR NOVA COMPRA - OK testado Postman
+app.post('/compra/inserir', async(req, res)=>{
+    const compras = {
+        CartaoId: req.body.CartaoId,
         PromocaoId: req.body.PromocaoId,
         data: req.body.data,
         quantidade: req.body.quantidade,
         valor: req.body.valor
     };
 
-    if(!await cartao.findByPk(req.params.id)){
+    if(!await cartao.findByPk(req.body.CartaoId)){
         return res.status(400).json({
             error: true,
             message: 'Cartão não existe.'
         });
     };
 
-    await compra.create(cart)
+    if(!await cartao.findByPk(req.body.PromocaoId)){
+        return res.status(400).json({
+            error: true,
+            message: 'Promoção não existe.'
+        });
+    };
+
+    await compra.create(compras)
     .then(compracli=>{
         return res.json({
             error: false,
@@ -268,7 +277,7 @@ app.post('/compra/:id/inserir_compra', async(req, res)=>{
     });
 });
 
-//LISTAR TODAS AS COMPRAS DE TODOS OS CARTOES 
+//LISTAR TODAS AS COMPRAS DE TODOS OS CARTOES - OK Testado Postman
 app.get('/compra/listar', async(req, res)=>{
     await compra.findAll({include: [{all: true}]})
     .then(comp =>{
@@ -285,27 +294,28 @@ app.get('/compra/listar', async(req, res)=>{
     });
 });
 
-//ATUALIZAR OS DADOS DE UMA COMPRA
-app.put('/compra/:id/atualizar', async (req, res) => {
+//**************************************************************ATUALIZAR OS DADOS DE UMA COMPRA
+app.put('/compra/:id', async (req, res) => {
     const comp = {
         data: req.body.data,
         quantidade: req.body.quantidade,
-        valor: req.body.valor
+        valor: req.body.valor,
+        PromocaoId: req.params.id
     };
 
-    if (!await cartao.findByPk(req.body.params.id)){
-        return res.status(400).json({
-            error: true,
-            message: 'cartao não existe.'
-        });
-    };
+    // if (!await cartao.findByPk(req.body.params.id)){
+    //     return res.status(400).json({
+    //         error: true,
+    //         message: 'cartao não existe.'
+    //     });
+    // };
 
-    if (!await promocao.findByPk(req.body.PromocaoId)){
-        return res.status(400).json({
-            error: true,
-            message: 'promoção não encontrada.'
-        });
-    };
+    // if (!await promocao.findByPk(req.body.PromocaoId)){
+    //     return res.status(400).json({
+    //         error: true,
+    //         message: 'promoção não encontrada.'
+    //     });
+    // };
 
     await compra.update(comp,{
         where: Sequelize.and({PromocaoId: req.body.PromocaoId},
@@ -324,7 +334,7 @@ app.put('/compra/:id/atualizar', async (req, res) => {
     });
 });
 
-//EXCLUIR COMPRA
+//******************************************************************************EXCLUIR COMPRA
 app.get('/compra/:id/excluir', async(req, res)=>{
     await compra.destroy({
         where: {id: req.params.id}
@@ -341,8 +351,8 @@ app.get('/compra/:id/excluir', async(req, res)=>{
     });
 });
 
-//INSERIR NOVA PROMOCAO 
-app.post('/empresa/:id/inserir_promocao', async(req, res)=>{
+//INSERIR NOVA PROMOCAO - OK Testado Postman
+app.post('/empresa/:id/promocao', async(req, res)=>{
     const prom = {
         EmpresaId: req.params.id,
         nome: req.body.nome,
@@ -372,13 +382,13 @@ app.post('/empresa/:id/inserir_promocao', async(req, res)=>{
     });
 });
 
-//LISTAR TODOS AS PROMOCOES
-app.get('/promocao/listar_todos', async(req, res)=>{
+//LISTAR TODOS AS PROMOCOES - OK testado Postman
+app.get('/promocao/listar', async(req, res)=>{
     await promocao.findAll({include: [{all: true}]})
-    .then(cart =>{
+    .then(prom =>{
         return res.json({
             error: false,
-            cart
+            prom
         });
     })
     .catch((error)=>{
@@ -389,7 +399,7 @@ app.get('/promocao/listar_todos', async(req, res)=>{
     });
 });
 
-//ATUALIZAR OS DADOS DA PROMOCAO
+//ATUALIZAR OS DADOS DA PROMOCAO - OK testado Postman
 app.put('/promocao/:id/atualizar', async (req, res) => {
     const prom = {
         id: req.params.id,
@@ -399,7 +409,7 @@ app.put('/promocao/:id/atualizar', async (req, res) => {
         validade: req.body.validade
     };
 
-    if (!await promocao.findByPk(req.body.id)){
+    if (!await promocao.findByPk(req.params.id)){
         return res.status(400).json({
             error: true,
             message: 'promoção não existe.'
@@ -407,8 +417,8 @@ app.put('/promocao/:id/atualizar', async (req, res) => {
     };
 
     await promocao.update(prom,{
-        where: Sequelize.and({EmpresaId: req.body.EmpresaId},
-            {id: req.params.id})
+        where: Sequelize.and({id: req.params.id})
+            // ,{id: req.params.id})
     }).then(promocaos=>{
         return res.json({
             error: false,
@@ -423,8 +433,8 @@ app.put('/promocao/:id/atualizar', async (req, res) => {
     });
 });
 
-//EXCLUIR PROMOCAO
-app.get('/promocao/:id/excluir', async(req, res)=>{
+//EXCLUIR PROMOCAO - Ok testado Postman
+app.delete('/promocao/:id', async(req, res)=>{
     await promocao.destroy({
         where: {id: req.params.id}
     }).then(function(){
@@ -435,13 +445,13 @@ app.get('/promocao/:id/excluir', async(req, res)=>{
     }).catch(erro=>{
         return res.status(400).json({
             error: true,
-            message: "Erro: impossível excluir promoção."
+            message: "Erro: impossível excluir promoção, verifique se ela não esta vinculada a uma compra."
         });
     });
 });
 
-//INSERIR NOVA EMPRESA
-app.post('/inserir_empresa', async(req, res)=>{
+//INSERIR NOVA EMPRESA - OK Testado Postman
+app.post('/empresas', async(req, res)=>{
     await empresa.create(
         req.body
     ).then(emp =>{
@@ -458,7 +468,7 @@ app.post('/inserir_empresa', async(req, res)=>{
     });
 });
 
-//LISTAR TODOS AS EMPRESAS
+//LISTAR TODOS AS EMPRESAS - Ok Testado Postman
 app.get('/empresa/listar', async(req, res)=>{
     await empresa.findAll()
     .then(emp =>{
@@ -475,15 +485,15 @@ app.get('/empresa/listar', async(req, res)=>{
     });
 });
 
-//ATUALIZAR EMPRESA
-app.put('/emrpesa/:id/atualizar', async (req, res) => {
+//ATUALIZAR EMPRESA - Ok Testado Postman
+app.put('/empresa/:id/atualizar', async (req, res) => {
     const emp = {
         nome: req.body.nome,
         dataAdesao: req.body.dataAdesao,
         id: req.params.id
     };
 
-    if (!await empresa.findByPk(req.body.id)){
+    if (!await empresa.findByPk(req.params.id)){
         return res.status(400).json({
             error: true,
             message: 'Empresa não existe.'
@@ -491,8 +501,8 @@ app.put('/emrpesa/:id/atualizar', async (req, res) => {
     };
 
     await empresa.update(emp,{
-        where: Sequelize.and({id: req.body.id},
-            {id: req.params.id})
+        where: Sequelize.and({id: req.params.id})
+            // ,{id: req.body.id})
     }).then(umaempresa=>{
         return res.json({
             error: false,
@@ -507,8 +517,8 @@ app.put('/emrpesa/:id/atualizar', async (req, res) => {
     });
 });
 
-//EXCLUIR EMPRESA
-app.get('/excluir_empresa/:id', async(req, res)=>{
+//EXCLUIR EMPRESA - Ok testado Postman
+app.delete('/empresa/:id', async(req, res)=>{
     await empresa.destroy({
         where: {id: req.params.id}
     }).then(function(){
@@ -519,10 +529,11 @@ app.get('/excluir_empresa/:id', async(req, res)=>{
     }).catch(erro=>{
         return res.status(400).json({
             error: true,
-            message: "Erro: impossível excluir empresa."
+            message: "Erro: impossível excluir empresa, verifique se não há promoções vinculadas a empresa."
         });
     });
 });
+
 
 let port = process.env.PORT || 3001;
 
