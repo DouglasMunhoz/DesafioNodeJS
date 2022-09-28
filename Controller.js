@@ -238,24 +238,24 @@ app.delete('/cartao/:id', async(req, res)=>{
     });
 });
 
-//**************************INSERIR NOVA COMPRA - OK testado Postman
-app.post('/compra/inserir', async(req, res)=>{
+//INSERIR NOVA COMPRA - OK testado Postman
+app.post('/compra/:cartaoid/:promocaoid', async(req, res)=>{
     const compras = {
-        CartaoId: req.body.CartaoId,
-        PromocaoId: req.body.PromocaoId,
+        CartaoId: req.params.cartaoid,
+        PromocaoId: req.params.promocaoid,
         data: req.body.data,
         quantidade: req.body.quantidade,
         valor: req.body.valor
     };
 
-    if(!await cartao.findByPk(req.body.CartaoId)){
+    if(!await cartao.findByPk(req.params.cartaoid)){
         return res.status(400).json({
             error: true,
             message: 'Cartão não existe.'
         });
     };
 
-    if(!await cartao.findByPk(req.body.PromocaoId)){
+    if(!await promocao.findByPk(req.params.promocaoid)){
         return res.status(400).json({
             error: true,
             message: 'Promoção não existe.'
@@ -294,32 +294,33 @@ app.get('/compra/listar', async(req, res)=>{
     });
 });
 
-//**************************************************************ATUALIZAR OS DADOS DE UMA COMPRA
-app.put('/compra/:id', async (req, res) => {
+//ATUALIZAR OS DADOS DE UMA COMPRA - OK testado Postman
+app.put('/compra/:cartaoid/:promocaoid', async (req, res) => {
     const comp = {
         data: req.body.data,
         quantidade: req.body.quantidade,
         valor: req.body.valor,
-        PromocaoId: req.params.id
+        CartaoId: req.params.cartaoid,
+        PromocaoId: req.params.promocaoid
     };
 
-    // if (!await cartao.findByPk(req.body.params.id)){
-    //     return res.status(400).json({
-    //         error: true,
-    //         message: 'cartao não existe.'
-    //     });
-    // };
+    if (!await cartao.findByPk(req.params.cartaoid)){
+        return res.status(400).json({
+            error: true,
+            message: 'cartao não existe.'
+        });
+    };
 
-    // if (!await promocao.findByPk(req.body.PromocaoId)){
-    //     return res.status(400).json({
-    //         error: true,
-    //         message: 'promoção não encontrada.'
-    //     });
-    // };
+    if (!await promocao.findByPk(req.params.promocaoid)){
+        return res.status(400).json({
+            error: true,
+            message: 'promoção não encontrada.'
+        });
+    };
 
     await compra.update(comp,{
-        where: Sequelize.and({PromocaoId: req.body.PromocaoId},
-            {CartaoId: req.params.id})
+        where: Sequelize.and({PromocaoId: req.params.promocaoid},
+            {CartaoId: req.params.cartaoid})
     }).then(function(compras){
         return res.json({
             error: false,
@@ -334,10 +335,25 @@ app.put('/compra/:id', async (req, res) => {
     });
 });
 
-//******************************************************************************EXCLUIR COMPRA
-app.get('/compra/:id/excluir', async(req, res)=>{
+//EXCLUIR COMPRA - Ok Testado Postman
+app.delete('/compra/:cartaoid/:promocaoid', async(req, res)=>{
+
+    if (!await cartao.findByPk(req.params.cartaoid)){
+        return res.status(400).json({
+            error: true,
+            message: 'cartao não existe.'
+        });
+    };
+
+    if (!await promocao.findByPk(req.params.promocaoid)){
+        return res.status(400).json({
+            error: true,
+            message: 'promoção não encontrada.'
+        });
+    };
+
     await compra.destroy({
-        where: {id: req.params.id}
+        where: Sequelize.and({cartaoid: req.params.cartaoid}, {promocaoid: req.params.promocaoid})
     }).then(function(){
         return res.json({
             error: false,
