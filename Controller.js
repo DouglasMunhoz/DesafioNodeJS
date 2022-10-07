@@ -205,8 +205,8 @@ app.put('/cartao/:id', async (req, res) => {
     };
 
     await cartao.update(cart,{
-        where: Sequelize.and({ClienteId : req.body.ClienteId})
-        // ,{id: req.params.id})
+        where: Sequelize.and({ClienteId : req.body.ClienteId},
+        {id: req.params.id})
     }).then(cartaos=>{
         return res.json({
             error: false,
@@ -239,10 +239,10 @@ app.delete('/cartao/:id', async(req, res)=>{
 });
 
 //INSERIR NOVA COMPRA - OK testado Postman
-app.post('/compra/:cartaoid/:promocaoid', async(req, res)=>{
+app.post('/compra/:cartaoid', async(req, res)=>{
     const compras = {
         CartaoId: req.params.cartaoid,
-        PromocaoId: req.params.promocaoid,
+        PromocaoId: req.body.promocaoid,
         data: req.body.data,
         quantidade: req.body.quantidade,
         valor: req.body.valor
@@ -255,7 +255,7 @@ app.post('/compra/:cartaoid/:promocaoid', async(req, res)=>{
         });
     };
 
-    if(!await promocao.findByPk(req.params.promocaoid)){
+    if(!await promocao.findByPk(req.body.promocaoid)){
         return res.status(400).json({
             error: true,
             message: 'Promoção não existe.'
@@ -273,6 +273,26 @@ app.post('/compra/:cartaoid/:promocaoid', async(req, res)=>{
         return res.status(400).json({
             error: true,
             message: "Não foi possível inserir a compra."
+        });
+    });
+});
+
+
+//LISTAR TODOS AS COMPRAS DE UM CARTAO ESPECIFICO - OK Testado Postman
+app.get('/cartao/:id/compras', async(req, res)=>{
+    await compra.findAll({
+        where: {CartaoId: req.params.id}
+    })
+    .then(comp =>{
+        return res.json({
+            error: false,
+            comp
+        });
+    })
+    .catch((error)=>{
+        return res.status(400).json({
+            error: true,
+            message: "Erro de conexão"
         });
     });
 });
@@ -394,6 +414,25 @@ app.post('/empresa/:id/promocao', async(req, res)=>{
         return res.status(400).json({
             error: true,
             message: "Não foi possível inserir a promoção."
+        });
+    });
+});
+
+//LISTAR PROMOCOES DE UMA EMPRESA - Ok Testado Postman
+app.get('/empresa/:id/promocoes', async(req, res)=>{
+    await promocao.findAll({
+        where: {EmpresaId: req.params.id}
+    })
+    .then(prom =>{
+        return res.json({
+            error: false,
+            prom
+        });
+    })
+    .catch((error)=>{
+        return res.status(400).json({
+            error: true,
+            message: "Erro de conexão"
         });
     });
 });
